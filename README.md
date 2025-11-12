@@ -21,9 +21,9 @@ A lightweight, minimal floating Mini Player for **macOS Music.app**, built with 
 
 ## 🖼 Preview
 
-| Floating UI | Playback Controls | Progress Slider |
-|---|---|---|
-| ![preview1](https://placehold.co/300x200) | ![preview2](https://placehold.co/300x200) | ![preview3](https://placehold.co/300x200) |
+| Playing | Not Playing |
+|---|---|
+| ![preview1](https://private-user-images.githubusercontent.com/219630637/513310469-b0d893c3-150e-49b2-8f44-5477a20eaec0.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjI5NTE5OTAsIm5iZiI6MTc2Mjk1MTY5MCwicGF0aCI6Ii8yMTk2MzA2MzcvNTEzMzEwNDY5LWIwZDg5M2MzLTE1MGUtNDliMi04ZjQ0LTU0NzdhMjBlYWVjMC5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUxMTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MTExMlQxMjQ4MTBaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1kYmJmYjdhN2M0NjY5MjFlYmJhZjRiNjdiZWY3MGI3NWVhMWU0NDg5YjhiOTI2MWViNzEzM2U4YTAxYWQ1MzZmJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.W-Wxz4DNUjgVa9Os0gg-JXz1l_IAtvCvYPV10zzOAo4) | ![preview2](https://private-user-images.githubusercontent.com/219630637/513310630-07eadc62-d9fb-4faa-a4ac-ca3ecd17ad56.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjI5NTE5OTAsIm5iZiI6MTc2Mjk1MTY5MCwicGF0aCI6Ii8yMTk2MzA2MzcvNTEzMzEwNjMwLTA3ZWFkYzYyLWQ5ZmItNGZhYS1hNGFjLWNhM2VjZDE3YWQ1Ni5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjUxMTEyJTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI1MTExMlQxMjQ4MTBaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT00MDk2Mzc2YTFhNDUxMGU2OTMzNGU4OThjNjJkOWRkNjEyNWY4ZjEzODQ2ZmZlMmQ0NjQ4YjUzN2Y1MTJmZDM0JlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCJ9.a6HvZf2HZmOPQbuvjBXkxBwMx9eRN2kM1D4tmPgnarA) |
 
 ---
 
