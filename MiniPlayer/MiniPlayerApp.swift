@@ -15,6 +15,16 @@ struct MiniPlayerApp: App {
                     enableSpaceKeyControl()
                 }
         }
+        .commands {
+                    CommandGroup(after: .windowSize) {
+                        Divider()
+                        Toggle("Resizable Window", isOn: Binding(
+                            get: { WindowResizer.isResizable() },
+                            set: { _ in WindowResizer.toggleResizable() }
+                        ))
+                        .keyboardShortcut("R", modifiers: [.command, .shift])
+                    }
+                }
     }
 
     func makeWindowFloat() {
@@ -22,11 +32,15 @@ struct MiniPlayerApp: App {
             if let window = NSApplication.shared.windows.first {
                 window.level = NSWindow.Level(rawValue: 5000)
                 window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-                //window.titlebarAppearsTransparent = true
                 window.isMovableByWindowBackground = true
                 //window.styleMask.remove(.titled)
                 window.styleMask.remove(.resizable)
                 window.standardWindowButton(.closeButton)?.isEnabled = false
+                
+                window.styleMask.insert(.fullSizeContentView)
+                window.titleVisibility = .hidden
+                window.titlebarAppearsTransparent = true
+                window.titlebarSeparatorStyle = .none
             }
         }
     }
