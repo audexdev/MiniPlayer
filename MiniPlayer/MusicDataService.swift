@@ -1,7 +1,6 @@
 import Foundation
 import AppKit
 import ScriptingBridge
-import MediaPlayer
 
 struct ArtworkResult {
     let url: URL
@@ -53,29 +52,42 @@ class MusicDataService: ObservableObject {
         }
     }
 
-    func fetchArtwork(title: String, artist: String, album: String,
-                      completion: @escaping (NSImage?) -> Void) {
-
-        let query = "\(title) \(artist) \(album)"
+    func fetchArtwork(title: String, artist: String, album: String, completion: @escaping (NSImage?) -> Void) {
+        let query = "\(title) \(artist)"
         guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             completion(nil)
             return
         }
 
-        let urlString = "https://itunes.apple.com/search?term=\(encoded)&entity=song&limit=1"
+        let urlString = "https://itunes.apple.com/search?term=\(encoded)&entity=song&limit=5"
 
         URLSession.shared.dataTask(with: URL(string: urlString)!) { data, _, _ in
-            guard
-                let data = data,
-                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                let result = (json["results"] as? [[String: Any]])?.first,
-                let urlStr = result["artworkUrl100"] as? String
+            guard let data = data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let results = json["results"] as? [[String: Any]]
             else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
 
-            let hq = urlStr.replacingOccurrences(of: "100x100bb", with: "600x600bb")
+            let normalizedArtist = artist.lowercased()
+            let normalizedAlbum = album.lowercased()
+
+            let match =
+                results.first(where: { ($0["artistName"] as? String)?.lowercased() == normalizedArtist &&
+                                       ($0["collectionName"] as? String)?.lowercased() == normalizedAlbum })
+            ??  results.first(where: { ($0["artistName"] as? String)?.lowercased() == normalizedArtist })
+            ??  results.first
+
+            guard let urlStr = match?["artworkUrl100"] as? String else {
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+
+            // HQ artwork URL (600x600 or better)
+            let hq = urlStr
+                .replacingOccurrences(of: "100x100bb", with: "600x600bb")
+                .replacingOccurrences(of: "100x100", with: "600x600")
 
             URLSession.shared.dataTask(with: URL(string: hq)!) { imgData, _, _ in
                 let img = imgData.flatMap { NSImage(data: $0) }

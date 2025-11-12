@@ -12,14 +12,14 @@ struct ContentView: View {
             if let img = music.albumArt {
                 Image(nsImage: img)
                     .resizable()
-                    .frame(width: 250, height: 250)
+                    .frame(width: 300, height: 300)
                     .cornerRadius(12)
                     .shadow(radius: 5)
             } else {
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.gray.opacity(0.2))
-                        .frame(width: 250, height: 250)
+                        .frame(width: 300, height: 300)
                     Image(systemName: "music.note")
                         .font(.largeTitle)
                         .foregroundColor(.gray)
@@ -27,11 +27,23 @@ struct ContentView: View {
             }
 
             // Track info
-            Text(music.trackName)
-                .font(.system(size: 16, weight: .semibold, design: .rounded))
-            Text("\(music.artistName) - \(music.albumName)")
-                .font(.system(size: 12, weight: .regular, design: .rounded))
-                .foregroundColor(.secondary)
+            MarqueeText(
+                text: music.trackName,
+                font: NSFont.systemFont(ofSize: 14, weight: .medium),
+                leftFade: 16,
+                rightFade: 16,
+                startDelay: 0.5,
+                alignment: .center
+            )
+
+            MarqueeText(
+                text: "\(music.artistName) – \(music.albumName)",
+                font: NSFont.systemFont(ofSize: 12, weight: .thin),
+                leftFade: 16,
+                rightFade: 16,
+                startDelay: 0.5,
+                alignment: .center
+            )
 
             VStack {
                 Slider(value: $currentTime, in: 0...duration, onEditingChanged: { editing in
@@ -48,7 +60,6 @@ struct ContentView: View {
                 .font(.caption2)
                 .foregroundColor(.secondary)
             }
-            .padding(.horizontal, 12)
 
             // Controls
             HStack {
