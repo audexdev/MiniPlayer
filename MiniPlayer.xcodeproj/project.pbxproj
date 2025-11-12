@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A2266CC2EC3A7A200977BEB /* ScriptingBridge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A2266CB2EC3A7A200977BEB /* ScriptingBridge.framework */; };
+		0A18DEE12EC4AD7F00E1C089 /* ScriptingBridge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A2266CB2EC3A7A200977BEB /* ScriptingBridge.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,6 +28,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0A18DEDD2EC4AA1C00E1C089 /* MediaRemote.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaRemote.framework; path = ../../../../../System/Library/PrivateFrameworks/MediaRemote.framework; sourceTree = "<group>"; };
 		0A2266902EC3A2C500977BEB /* MiniPlayer.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MiniPlayer.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A2266A62EC3A2C700977BEB /* MiniPlayerTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MiniPlayerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A2266B02EC3A2C700977BEB /* MiniPlayerUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MiniPlayerUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -70,7 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A2266CC2EC3A7A200977BEB /* ScriptingBridge.framework in Frameworks */,
+				0A18DEE12EC4AD7F00E1C089 /* ScriptingBridge.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -115,6 +116,7 @@
 		0A2266CA2EC3A7A200977BEB /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0A18DEDD2EC4AA1C00E1C089 /* MediaRemote.framework */,
 				0A2266CB2EC3A7A200977BEB /* ScriptingBridge.framework */,
 			);
 			name = Frameworks;
@@ -431,6 +433,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = MiniPlayer/Info.plist;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "for controlling Music.app (like play/pause)";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -445,6 +448,10 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "MiniPlayer/MiniPlayer-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
+				SYSTEM_FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
+				);
 			};
 			name = Debug;
 		};
@@ -463,6 +470,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = MiniPlayer/Info.plist;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "for controlling Music.app (like play/pause)";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -476,6 +484,10 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "MiniPlayer/MiniPlayer-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
+				SYSTEM_FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/PrivateFrameworks",
+				);
 			};
 			name = Release;
 		};

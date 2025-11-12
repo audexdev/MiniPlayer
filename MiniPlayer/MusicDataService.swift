@@ -56,7 +56,7 @@ class MusicDataService: ObservableObject {
     func fetchArtwork(title: String, artist: String, album: String,
                       completion: @escaping (NSImage?) -> Void) {
 
-        let query = "\(artist) \(album)"
+        let query = "\(title) \(artist) \(album)"
         guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             completion(nil)
             return
@@ -102,11 +102,15 @@ class MusicDataService: ObservableObject {
         self.albumName = album
         self.isPlaying = (app.playerState == MusicEPlSPlaying)
         
+        
+        
         let key = "\(title) | \(artist) | \(album)"
         if key == lastKey { return }
         lastKey = key
         
+        #if DEBUG
         print("NEW TRACK: \(key)")
+        #endif
         
         fetchArtwork(title: title, artist: artist, album: album) { result in
             DispatchQueue.main.async {
