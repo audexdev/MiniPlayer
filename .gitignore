@@ -7,3 +7,4 @@ MiniPlayerUITests/
 xcuserdata/
 DerivedData/
 *.xcbkptlist
+.DS_Store
