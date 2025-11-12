@@ -1,0 +1,9 @@
+# Xcode test targets
+MiniPlayerTests/
+MiniPlayerUITests/
+
+# Xcode junk
+*.xcuserstate
+xcuserdata/
+DerivedData/
+*.xcbkptlist
