@@ -5,8 +5,16 @@ extension Notification.Name {
     static let togglePlayPause = Notification.Name("togglePlayPause")
 }
 
+class WindowManager {
+    static var window: NSWindow?
+    static var first = true
+}
+
 @main
 struct MiniPlayerApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self)
+    var appDelegate
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -41,6 +49,10 @@ struct MiniPlayerApp: App {
                 window.titleVisibility = .hidden
                 window.titlebarAppearsTransparent = true
                 window.titlebarSeparatorStyle = .none
+                
+                WindowManager.window = window
+                
+                window.overrideMinimizeButton()
             }
         }
     }

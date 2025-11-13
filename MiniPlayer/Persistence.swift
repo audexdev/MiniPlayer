@@ -1,10 +1,3 @@
-//
-//  Persistence.swift
-//  MiniPlayer
-//
-//  Created by kairi hoshino on 2025/11/12.
-//
-
 import CoreData
 
 struct PersistenceController {
