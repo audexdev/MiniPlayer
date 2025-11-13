@@ -53,6 +53,10 @@ struct MiniPlayerApp: App {
                 WindowManager.window = window
                 
                 window.overrideMinimizeButton()
+                
+                if WindowManager.first {
+                    WindowManager.first = false
+                }
             }
         }
     }

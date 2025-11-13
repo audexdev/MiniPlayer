@@ -12,11 +12,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         
         // prevent default func
-        if !WindowManager.first {
-            return false
-        } else {
+        if WindowManager.first {
             WindowManager.first = false
             return true
+        } else {
+            return false
         }
     }
 }
