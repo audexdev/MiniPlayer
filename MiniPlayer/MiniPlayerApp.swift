@@ -14,6 +14,11 @@ class WindowManager {
 struct MiniPlayerApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self)
     var appDelegate
+    @StateObject var music = MusicDataService()
+    
+    init() {
+        appDelegate.music = music
+    }
     
     var body: some Scene {
         WindowGroup {
@@ -22,6 +27,7 @@ struct MiniPlayerApp: App {
                     makeWindowFloat()
                     enableSpaceKeyControl()
                 }
+                .environmentObject(music)
         }
         .commands {
                     CommandGroup(after: .windowSize) {

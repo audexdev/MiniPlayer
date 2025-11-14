@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var music = MusicDataService()
+    @EnvironmentObject var music: MusicDataService
 
     @State private var currentTime: Double = 0
     @State private var duration: Double = 1     // avoid divide-by-zero

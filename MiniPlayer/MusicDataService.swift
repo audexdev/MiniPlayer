@@ -102,6 +102,10 @@ class MusicDataService: ObservableObject {
     private var lastKey: String = ""
     
     func refresh() {
+        #if DEBUG
+        print("refresh called")
+        #endif
+        
         guard let app = musicApp, app.isRunning else { return }
         guard let track = app.currentTrack else { return }
         
@@ -113,8 +117,6 @@ class MusicDataService: ObservableObject {
         self.artistName = artist
         self.albumName = album
         self.isPlaying = (app.playerState == MusicEPlSPlaying)
-        
-        
         
         let key = "\(title) | \(artist) | \(album)"
         if key == lastKey { return }
