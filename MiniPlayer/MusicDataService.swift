@@ -2,17 +2,14 @@ import Foundation
 import AppKit
 import ScriptingBridge
 
-struct ArtworkResult {
-    let url: URL
-    let image: NSImage?
-}
-
 class MusicDataService: ObservableObject {
     @Published var trackName: String = "Not Playing"
     @Published var artistName: String = ""
     @Published var albumName: String = ""
     @Published var isPlaying: Bool = false
     @Published var albumArt: NSImage? = nil
+    @Published var backgroundColor: NSColor = NSColor.windowBackgroundColor
+    @Published var volume: Int = 0
     
     private static let musicBundleID = "com.apple.Music"
     
@@ -129,6 +126,11 @@ class MusicDataService: ObservableObject {
         fetchArtwork(title: title, artist: artist, album: album) { result in
             DispatchQueue.main.async {
                 self.albumArt = result
+                
+                if let img = result,
+                   let color = averageColor(from: img) {
+                    self.backgroundColor = color
+                }
             }
         }
     }
@@ -139,7 +141,7 @@ class MusicDataService: ObservableObject {
     
     func toggleShuffle() {
         if let app = musicApp {
-            app.shuffleEnabled = !(app.shuffleEnabled ?? false)
+            app.shuffleEnabled = !app.shuffleEnabled
             refresh()
         }
     }
@@ -147,7 +149,7 @@ class MusicDataService: ObservableObject {
     func onClickRepeat() {
         guard let app = musicApp else { return }
 
-        let mode = app.songRepeat ?? MusicERptOff
+        let mode = app.songRepeat
 
         if mode == MusicERptOff {
             app.songRepeat = MusicERptAll
@@ -182,7 +184,7 @@ class MusicDataService: ObservableObject {
         guard let app = musicApp else { return nil }
 
         let current = app.playerPosition
-        let durationString = app.currentTrack?.time  // 例: "3:49"
+        let durationString = app.currentTrack?.time
         let duration = parseTime(durationString)
 
         return (current, duration)
@@ -199,5 +201,13 @@ class MusicDataService: ObservableObject {
 
         var error: NSDictionary?
         script.executeAndReturnError(&error)
+    }
+    
+    func getVolume() -> Int {
+        return musicApp?.soundVolume ?? 100
+    }
+    
+    func setVolume(_ value: Int) {
+        musicApp?.soundVolume = value
     }
 }
