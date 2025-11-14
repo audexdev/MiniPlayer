@@ -51,6 +51,7 @@ class MusicDataService: ObservableObject {
 
     func fetchArtwork(title: String, artist: String, album: String, completion: @escaping (NSImage?) -> Void) {
         let query = "\(title) \(artist)"
+        
         guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
             completion(nil)
             return
@@ -61,27 +62,18 @@ class MusicDataService: ObservableObject {
         URLSession.shared.dataTask(with: URL(string: urlString)!) { data, _, _ in
             guard let data = data,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let results = json["results"] as? [[String: Any]]
-            else {
+                  let results = json["results"] as? [[String: Any]] else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
 
-            let normalizedArtist = artist.lowercased()
-            let normalizedAlbum = album.lowercased()
-
-            let match =
-                results.first(where: { ($0["artistName"] as? String)?.lowercased() == normalizedArtist &&
-                                       ($0["collectionName"] as? String)?.lowercased() == normalizedAlbum })
-            ??  results.first(where: { ($0["artistName"] as? String)?.lowercased() == normalizedArtist })
-            ??  results.first
-
+            let match = results.first
+            
             guard let urlStr = match?["artworkUrl100"] as? String else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
 
-            // HQ artwork URL (600x600 or better)
             let hq = urlStr
                 .replacingOccurrences(of: "100x100bb", with: "600x600bb")
                 .replacingOccurrences(of: "100x100", with: "600x600")
@@ -89,48 +81,95 @@ class MusicDataService: ObservableObject {
             URLSession.shared.dataTask(with: URL(string: hq)!) { imgData, _, _ in
                 let img = imgData.flatMap { NSImage(data: $0) }
                 DispatchQueue.main.async { completion(img) }
+            }.resume()
+            
+        }.resume()
+    }
+    
+    func getArtworkViaAppleScript(completion: @escaping (NSImage?) -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let scriptSource = """
+            tell application "Music"
+                if not (exists current track) then return "NO_TRACK"
+                try
+                    set myArtwork to first artwork of current track
+                    set myData to data of myArtwork
+                    return myData
+                on error
+                    return "ERROR"
+                end try
+            end tell
+            """
+            
+            guard let script = NSAppleScript(source: scriptSource) else {
+                DispatchQueue.main.async { completion(nil) }
+                return
             }
-            .resume()
-
+            
+            var error: NSDictionary?
+            let result = script.executeAndReturnError(&error)
+            
+            if let err = error {
+                print("AppleScript error:", err)
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+            if result.stringValue == "NO_TRACK" || result.stringValue == "ERROR" {
+                DispatchQueue.main.async { completion(nil) }
+                return
+            }
+            
+            if let image = NSImage(data: result.data) {
+                DispatchQueue.main.async { completion(image) }
+            } else {
+                DispatchQueue.main.async { completion(nil) }
+            }
         }
-        .resume()
+    }
+    
+    func getArtwork(title: String, artist: String, album: String, completion: @escaping (NSImage?) -> Void) {
+        getArtworkViaAppleScript { img in
+            if let img = img {
+                completion(img)
+                return
+            }
+        
+            // iTunes API for fallback
+            self.fetchArtwork(title: title, artist: artist, album: album) { apiImg in
+                completion(apiImg)
+            }
+        }
     }
     
     private var lastKey: String = ""
     
     func refresh() {
-        #if DEBUG
-        print("refresh called")
-        #endif
-        
         guard let app = musicApp, app.isRunning else { return }
         guard let track = app.currentTrack else { return }
-        
+
         let title = track.name ?? ""
         let artist = track.artist ?? ""
         let album = track.album ?? ""
-        
+
         self.trackName = title
         self.artistName = artist
         self.albumName = album
         self.isPlaying = (app.playerState == MusicEPlSPlaying)
-        
+
         let key = "\(title) | \(artist) | \(album)"
         if key == lastKey { return }
         lastKey = key
-        
-        #if DEBUG
-        print("NEW TRACK: \(key)")
-        #endif
-        
-        fetchArtwork(title: title, artist: artist, album: album) { result in
-            DispatchQueue.main.async {
-                self.albumArt = result
-                
-                if let img = result,
-                   let color = averageColor(from: img) {
-                    self.backgroundColor = color
-                }
+
+#if DEBUG
+        print("NEW TRACK:", key)
+#endif
+
+        getArtwork(title: title, artist: artist, album: album) { result in
+            self.albumArt = result
+            
+            if let img = result,
+               let color = averageColor(from: img) {
+                self.backgroundColor = color
             }
         }
     }
