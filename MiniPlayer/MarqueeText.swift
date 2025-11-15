@@ -43,7 +43,7 @@ public struct MarqueeText: View {
                         maxWidth: .infinity,
                         minHeight: 0,
                         maxHeight: .infinity,
-                        alignment: .topLeading
+                        alignment: alignment
                     )
                     .offset(x: leftFade)
                     .mask(

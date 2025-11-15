@@ -1,6 +1,6 @@
 import AppKit
 
-class WindowResizer {
+class WindowResizer {    
     static func toggleResizable() {
         guard let window = NSApplication.shared.windows.first else { return }
 

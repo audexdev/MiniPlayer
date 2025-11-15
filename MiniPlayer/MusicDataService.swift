@@ -10,6 +10,7 @@ class MusicDataService: ObservableObject {
     @Published var albumArt: NSImage? = nil
     @Published var backgroundColor: NSColor = NSColor.windowBackgroundColor
     @Published var volume: Int = 0
+    @Published var isDarkBackground: Bool = false
     
     private static let musicBundleID = "com.apple.Music"
     
@@ -170,6 +171,7 @@ class MusicDataService: ObservableObject {
             if let img = result,
                let color = averageColor(from: img) {
                 self.backgroundColor = color
+                self.isDarkBackground = color.isDark() 
             }
         }
     }
@@ -248,5 +250,56 @@ class MusicDataService: ObservableObject {
     
     func setVolume(_ value: Int) {
         musicApp?.soundVolume = value
+    }
+    
+    func setWindowSize(compact: Bool) {
+        guard
+            let window = NSApp.windows.first,
+            let screen = window.screen ?? NSScreen.main
+        else { return }
+
+        let oldFrame = window.frame
+
+        let newSize = compact
+            ? NSSize(width: 332, height: 170)
+            : NSSize(width: 332, height: 510)
+
+        let screenFrame = screen.visibleFrame
+
+        let screenCenterX = screenFrame.midX
+        let screenCenterY = screenFrame.midY
+
+        let isLeft   = oldFrame.minX < screenCenterX
+        let isBottom = oldFrame.minY < screenCenterY
+
+        let dx = newSize.width  - oldFrame.size.width
+        let dy = newSize.height - oldFrame.size.height
+
+        var origin = oldFrame.origin
+
+        // horizontal anchor
+        if !isLeft {  // right side
+            origin.x -= dx
+        }
+
+        // vertical anchor
+        if !isBottom { // top side
+            origin.y -= dy
+        }
+
+        let newFrame = NSRect(origin: origin, size: newSize)
+        window.setFrame(newFrame, display: true, animate: true)
+    }
+    
+    func setWindowOpacity(compact: Bool) {
+        guard let window = NSApp.windows.first else { return }
+
+        if compact {
+            window.isOpaque = false
+            window.backgroundColor = NSColor.clear.withAlphaComponent(0.0)
+        } else {
+            window.isOpaque = false
+            window.backgroundColor = NSColor.windowBackgroundColor.withAlphaComponent(1.0)
+        }
     }
 }

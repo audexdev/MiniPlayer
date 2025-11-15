@@ -3,6 +3,7 @@ import SwiftUI
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     let music = MusicDataService()
+    let windowState = WindowState()
     
     func makeWindowFloat() {
         guard let window = WindowManager.window else { return }
@@ -24,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func createMainWindow() {
         let contentView = ContentView()
             .environmentObject(self.music)
+            .environmentObject(windowState)
 
         let hosting = NSHostingView(rootView: contentView)
         hosting.wantsLayer = true
@@ -38,7 +40,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         )
 
         window.hasShadow = true
-        window.isMovableByWindowBackground = true
         window.contentView = hosting
         window.center()
         window.makeKeyAndOrderFront(nil)
