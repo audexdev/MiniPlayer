@@ -261,7 +261,7 @@ class MusicDataService: ObservableObject {
         let oldFrame = window.frame
 
         let newSize = compact
-            ? NSSize(width: 332, height: 170)
+            ? NSSize(width: 332, height: 160)
             : NSSize(width: 332, height: 510)
 
         let screenFrame = screen.visibleFrame
@@ -269,7 +269,7 @@ class MusicDataService: ObservableObject {
         let screenCenterX = screenFrame.midX
         let screenCenterY = screenFrame.midY
 
-        let isLeft   = oldFrame.minX < screenCenterX
+        let isLeft = oldFrame.minX < screenCenterX
         let isBottom = oldFrame.minY < screenCenterY
 
         let dx = newSize.width  - oldFrame.size.width

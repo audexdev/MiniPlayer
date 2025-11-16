@@ -4,6 +4,7 @@ import SwiftUI
 class AppDelegate: NSObject, NSApplicationDelegate {
     let music = MusicDataService()
     let windowState = WindowState()
+    let playerUIState = PlayerUIState()
     
     func makeWindowFloat() {
         guard let window = WindowManager.window else { return }
@@ -26,6 +27,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let contentView = ContentView()
             .environmentObject(self.music)
             .environmentObject(windowState)
+            .environmentObject(playerUIState)
 
         let hosting = NSHostingView(rootView: contentView)
         hosting.wantsLayer = true
@@ -48,8 +50,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.overrideMinimizeButton()
 
         WindowManager.window = window
-
-        NSApp.activate(ignoringOtherApps: true)
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -65,7 +65,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         if let win = WindowManager.window {
             win.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
         }
         
         music.refresh()
