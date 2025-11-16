@@ -14,8 +14,7 @@ public struct MarqueeText: View {
     public var body: some View {
         let stringWidth  = text.widthOfString(usingFont: font)
         let stringHeight = text.heightOfString(usingFont: font)
-        
-        // Create our animations
+
         let animation = Animation
             .linear(duration: Double(stringWidth) / 30)
             .delay(startDelay)
@@ -24,12 +23,10 @@ public struct MarqueeText: View {
         let nullAnimation = Animation.linear(duration: 0)
         
         GeometryReader { geo in
-            // Decide if scrolling is needed
             let needsScrolling = (stringWidth > geo.size.width)
             
             ZStack {
                 if needsScrolling {
-                    // MARK: - Scrolling (Marquee) version
                     makeMarqueeTexts(
                         stringWidth: stringWidth,
                         stringHeight: stringHeight,
@@ -37,13 +34,12 @@ public struct MarqueeText: View {
                         animation: animation,
                         nullAnimation: nullAnimation
                     )
-                    // force left alignment when scrolling
                     .frame(
                         minWidth: 0,
                         maxWidth: .infinity,
                         minHeight: 0,
                         maxHeight: .infinity,
-                        alignment: alignment
+                        alignment: needsScrolling ? .leading : alignment
                     )
                     .offset(x: leftFade)
                     .mask(
@@ -55,32 +51,28 @@ public struct MarqueeText: View {
                     .frame(width: geo.size.width + leftFade)
                     .offset(x: -leftFade)
                 } else {
-                    // MARK: - Non-scrolling version
                     Text(text)
                         .font(.init(font))
                         .onChange(of: text) { _ in
-                            self.animate = false // No scrolling needed
+                            self.animate = false
                         }
                         .frame(
                             minWidth: 0,
                             maxWidth: .infinity,
                             minHeight: 0,
                             maxHeight: .infinity,
-                            alignment: alignment // use alignment only if not scrolling
+                            alignment: alignment
                         )
                 }
             }
             .onAppear {
-                // Trigger scrolling if needed
                 self.animate = needsScrolling
             }
             .onChange(of: text) { newValue in
                 let newStringWidth = newValue.widthOfString(usingFont: font)
                 if newStringWidth > geo.size.width {
-                    // Stop the old animation first
                     self.animate = false
                     
-                    // Kick off a new animation on the next runloop
                     DispatchQueue.main.async {
                         self.animate = true
                     }
@@ -96,7 +88,6 @@ public struct MarqueeText: View {
         }
     }
     
-    // MARK: - Marquee pair of texts
     @ViewBuilder
     private func makeMarqueeTexts(
         stringWidth: CGFloat,
@@ -105,7 +96,6 @@ public struct MarqueeText: View {
         animation: Animation,
         nullAnimation: Animation
     ) -> some View {
-        // Two stacked texts moving across in opposite phases
         Group {
             Text(text)
                 .lineLimit(1)
@@ -122,8 +112,7 @@ public struct MarqueeText: View {
                 .fixedSize(horizontal: true, vertical: false)
         }
     }
-    
-    // MARK: - Fade mask
+
     @ViewBuilder
     private func fadeMask(leftFade: CGFloat, rightFade: CGFloat) -> some View {
         HStack(spacing: 0) {
@@ -152,8 +141,7 @@ public struct MarqueeText: View {
             Rectangle().frame(width: 2).opacity(0)
         }
     }
-    
-    // MARK: - Initializer
+
     public init(
         text: String,
         font: NSFont,
