@@ -10,7 +10,6 @@ actor AudioQualityMonitor {
     private var continuations: [UUID: AsyncStream<CMPlayerStats>.Continuation] = [:]
     private var trackToken: UUID = UUID()
     private var trackStart: Date = .distantPast
-    private var store: OSLogStore?
     private var lastPosition: OSLogPosition?
 
     private init() {}
@@ -50,6 +49,9 @@ actor AudioQualityMonitor {
     }
 
     private func runSession(track: UUID) async {
+        let start = Date()
+        let duration: TimeInterval = 1.0
+
         let store: OSLogStore
         do {
             store = try OSLogStore.local()
@@ -57,9 +59,6 @@ actor AudioQualityMonitor {
             print("[AUDIO] scan error:", error)
             return
         }
-
-        let start = Date()
-        let duration: TimeInterval = 1.0
 
         while Date().timeIntervalSince(start) < duration {
             if Task.isCancelled || track != trackToken { return }
@@ -71,25 +70,28 @@ actor AudioQualityMonitor {
 
             try? await Task.sleep(nanoseconds: 50_000_000)
         }
+        // store goes out of scope here, releasing its mappings
     }
 
     private func scanOnce(store: OSLogStore) async -> CMPlayerStats? {
-        do {
-            let pos = try store.position(timeIntervalSinceEnd: -1.5)
-            let entries = try store.getEntries(with: [], at: pos)
+        return autoreleasepool {
+            do {
+                let pos = try store.position(timeIntervalSinceEnd: -1.5)
+                let entries = try store.getEntries(with: [], at: pos)
 
-            var merged: CMPlayerStats?
+                var merged: CMPlayerStats?
 
-            for case let log as OSLogEntryLog in entries {
-                if let stats = parse(log) {
-                    merged = merge(current: merged, candidate: stats)
+                for case let log as OSLogEntryLog in entries {
+                    if let stats = parse(log) {
+                        merged = merge(current: merged, candidate: stats)
+                    }
                 }
-            }
 
-            return merged
-        } catch {
-            print("[AUDIO] scan error:", error)
-            return nil
+                return merged
+            } catch {
+                print("[AUDIO] scan error:", error)
+                return nil
+            }
         }
     }
 
@@ -146,6 +148,8 @@ actor AudioQualityMonitor {
                 bitrate = val
             }
             
+            print("music")
+            
             if let format = msg.firstSubstring(between: "asbdFormatID = ", and: ", sdFormatID"), format == "qc+3" {
                 atmos = true
             }
@@ -179,8 +183,8 @@ actor AudioQualityMonitor {
            let sr = Double(srStr) {
             let fmt = msg.firstSubstring(between: "format:'", and: "'")
             
-            /*print("coremedia")
-            if msg.contains("dolby") ||
+            print("coremedia:", msg)
+            /*if msg.contains("dolby") ||
                 msg.contains("atmos") ||
                 msg.contains("spatial") ||
                 msg.contains("channel") ||
