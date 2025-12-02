@@ -6,6 +6,7 @@ struct ContentView: View {
     @EnvironmentObject var ui: PlayerUIState
 
     @State private var volumeValue: Double = 0
+    @State private var volumeTask: Task<Void, Never>?
 
     var body: some View {
         Group {
@@ -17,12 +18,9 @@ struct ContentView: View {
         }
         .onAppear {
             volumeValue = Double(music.getVolume())
-
-            Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { _ in
-                if let pos = music.getPlayerPosition() {
-                    ui.update(from: pos)
-                }
-            }
+        }
+        .onReceive(music.$volume) { newValue in
+            volumeValue = Double(newValue)
         }
         .background(Color(nsColor: music.backgroundColor))
         .animation(.easeOut(duration: 0.28), value: music.backgroundColor)
@@ -80,9 +78,21 @@ struct ContentView: View {
                 )
 
                 HStack {
-                    Text(ui.formattedCurrent).font(.caption2).foregroundColor(.secondary)
-                    Spacer()
-                    Text(ui.formattedDuration).font(.caption2).foregroundColor(.secondary)
+                    Text(ui.formattedCurrent)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+
+                    Text(music.qualityLabel)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .frame(maxWidth: .infinity, alignment: .center)
+
+                    Text(ui.formattedDuration)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
 
@@ -142,7 +152,7 @@ struct ContentView: View {
                         get: { volumeValue },
                         set: {
                             volumeValue = $0
-                            music.setVolume(Int($0))
+                            scheduleVolumeUpdate(Int($0))
                         }
                     ),
                     in: 0...100,
@@ -156,6 +166,16 @@ struct ContentView: View {
                 Image(systemName: "speaker.wave.3.fill")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private func scheduleVolumeUpdate(_ value: Int) {
+        volumeTask?.cancel()
+        volumeTask = Task {
+            try? await Task.sleep(nanoseconds: 80_000_000)
+            await MainActor.run {
+                music.setVolume(value)
             }
         }
     }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0A0A07922EDEA487009ECF67 /* Sweep in Frameworks */ = {isa = PBXBuildFile; productRef = 0A0A07912EDEA487009ECF67 /* Sweep */; };
+		0A0A07952EDEA69A009ECF67 /* SimplyCoreAudio in Frameworks */ = {isa = PBXBuildFile; productRef = 0A0A07942EDEA69A009ECF67 /* SimplyCoreAudio */; };
 		0A18DEE12EC4AD7F00E1C089 /* ScriptingBridge.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A2266CB2EC3A7A200977BEB /* ScriptingBridge.framework */; };
 /* End PBXBuildFile section */
 
@@ -71,7 +73,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A0A07952EDEA69A009ECF67 /* SimplyCoreAudio in Frameworks */,
 				0A18DEE12EC4AD7F00E1C089 /* ScriptingBridge.framework in Frameworks */,
+				0A0A07922EDEA487009ECF67 /* Sweep in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -142,6 +146,8 @@
 			);
 			name = MiniPlayer;
 			packageProductDependencies = (
+				0A0A07912EDEA487009ECF67 /* Sweep */,
+				0A0A07942EDEA69A009ECF67 /* SimplyCoreAudio */,
 			);
 			productName = MiniPlayer;
 			productReference = 0A2266902EC3A2C500977BEB /* MiniPlayer.app */;
@@ -226,6 +232,10 @@
 			);
 			mainGroup = 0A2266872EC3A2C500977BEB;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0A0A07902EDEA487009ECF67 /* XCLocalSwiftPackageReference "Dependencies/Sweep" */,
+				0A0A07932EDEA69A009ECF67 /* XCLocalSwiftPackageReference "Dependencies/SimplyCoreAudio" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0A2266912EC3A2C500977BEB /* Products */;
 			projectDirPath = "";
@@ -427,7 +437,7 @@
 				CODE_SIGN_ENTITLEMENTS = MiniPlayer/MiniPlayer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"MiniPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = CFYDJBH978;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -441,7 +451,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.5.1;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.audex.MiniPlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -464,7 +474,7 @@
 				CODE_SIGN_ENTITLEMENTS = MiniPlayer/MiniPlayer.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEVELOPMENT_ASSET_PATHS = "\"MiniPlayer/Preview Content\"";
 				DEVELOPMENT_TEAM = CFYDJBH978;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -478,7 +488,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.5.1;
+				MARKETING_VERSION = 1.6;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.audex.MiniPlayer;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -595,6 +605,28 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		0A0A07902EDEA487009ECF67 /* XCLocalSwiftPackageReference "Dependencies/Sweep" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Dependencies/Sweep;
+		};
+		0A0A07932EDEA69A009ECF67 /* XCLocalSwiftPackageReference "Dependencies/SimplyCoreAudio" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Dependencies/SimplyCoreAudio;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0A0A07912EDEA487009ECF67 /* Sweep */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = Sweep;
+		};
+		0A0A07942EDEA69A009ECF67 /* SimplyCoreAudio */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SimplyCoreAudio;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0A2266882EC3A2C500977BEB /* Project object */;
 }
