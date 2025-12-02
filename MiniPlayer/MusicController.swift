@@ -40,6 +40,7 @@ actor MusicController {
     private var stableTitle = ""
     private var stableArtist = ""
     private var stableAlbum = ""
+    private var pendingVolume: (value: Int, date: Date)?
 
     // MARK: - Polling loop
 
@@ -170,7 +171,7 @@ actor MusicController {
             albumArt: artwork,
             shuffleEnabled: inputs.shuffleEnabled,
             repeatMode: inputs.repeatMode,
-            volume: inputs.volume,
+            volume: resolveVolume(inputs.volume),
             position: inputs.position,
             duration: inputs.duration
         )
@@ -224,6 +225,26 @@ actor MusicController {
                 isPlaying: isPlaying
             )
         }
+    }
+    
+    private func resolveVolume(_ actual: Int) -> Int {
+        guard let pending = pendingVolume else { return actual }
+        let age = Date().timeIntervalSince(pending.date)
+        
+        // If Music has caught up, clear pending
+        if actual == pending.value {
+            pendingVolume = nil
+            return actual
+        }
+        
+        // Within grace window, prefer pending to avoid snap-back
+        if age < 0.6 {
+            return pending.value
+        }
+        
+        // Grace window passed; clear pending and use actual
+        pendingVolume = nil
+        return actual
     }
 
     private static func parseTime(_ time: String?) -> Double {
@@ -369,6 +390,7 @@ actor MusicController {
 
     func setVolume(_ value: Int) async {
         guard let app = await ensureMusicApp() else { return }
+        pendingVolume = (value, Date())
         await MainActor.run { app.soundVolume = value }
         await refreshNow()
     }

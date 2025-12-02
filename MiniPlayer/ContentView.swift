@@ -20,7 +20,9 @@ struct ContentView: View {
             volumeValue = Double(music.getVolume())
         }
         .onReceive(music.$volume) { newValue in
-            volumeValue = Double(newValue)
+            if !ui.isDraggingVolume {
+                volumeValue = Double(newValue)
+            }
         }
         .background(Color(nsColor: music.backgroundColor))
         .animation(.easeOut(duration: 0.28), value: music.backgroundColor)
@@ -83,11 +85,38 @@ struct ContentView: View {
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Text(music.qualityLabel)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .frame(maxWidth: .infinity, alignment: .center)
+                    HStack(spacing: 6) {
+                        if music.codec == .atmos {
+                            Image("Dolby_Atmos")
+                                .resizable()
+                                .interpolation(.high)
+                                .antialiased(false)
+                                .renderingMode(.template)
+                                .foregroundColor(.secondary)
+                                .frame(width: 100, height: 15.625)
+                                .fixedSize()
+                        } else if music.codec == .lossless {
+                            Image("Lossless")
+                                .resizable()
+                                .interpolation(.none)
+                                .antialiased(false)
+                                .renderingMode(.template)
+                                .foregroundColor(.secondary)
+                                .frame(width: 10, height: 10)
+                                .fixedSize()
+                        }
+
+                        if music.codec != .atmos {
+                            Text(music.qualityLabel)
+                                .font(.system(size: 13, weight: .light))
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .layoutPriority(10)
+                    .frame(width: 170)
 
                     Text(ui.formattedDuration)
                         .font(.caption2)

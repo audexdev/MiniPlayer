@@ -12,6 +12,7 @@ final class MusicDataService: ObservableObject {
     @Published var volume: Int = 0
     @Published var isDarkBackground: Bool = false
     @Published var qualityLabel: String = ""
+    @Published var codec: AudioCodec?
 
     private let controller = MusicController()
     private let artworkProcessor = ArtworkProcessor.shared
@@ -76,6 +77,7 @@ final class MusicDataService: ObservableObject {
                 } else {
                     label = "AAC"
                 }
+                self.codec = q.codec
                 await MainActor.run {
                     self.qualityLabel = label
                     print("AudioQuality update:", label)
