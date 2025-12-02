@@ -1,8 +1,10 @@
 import AppKit
 import SwiftUI
 
+@MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
-    let music = MusicDataService()
+    @MainActor
+    lazy var music = MusicDataService()
     let windowState = WindowState()
     let playerUIState = PlayerUIState()
     
@@ -50,9 +52,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.overrideMinimizeButton()
 
         WindowManager.window = window
+        
+        print("launched")
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        music.bindUIState(playerUIState)
         createMainWindow()
         setupSpaceKeyControl()
         makeWindowFloat()

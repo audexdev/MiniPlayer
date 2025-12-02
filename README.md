@@ -52,3 +52,10 @@ This app controls **Music.app via ScriptingBridge**, which **does not work in ma
 git clone https://github.com/YOUR_USERNAME/MiniPlayer.git
 cd MiniPlayer
 open MiniPlayer.xcodeproj
+
+## Dependencies
+
+This project uses the following Swift packages:
+
+- [Sweep](https://github.com/JohnSundell/Sweep) — Simple string scanning utilities
+- [SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) - A framework that makes CoreAudio easier to use.
