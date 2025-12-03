@@ -11,16 +11,17 @@ actor AudioQualityMonitor {
     private var trackToken: UUID = UUID()
     private var trackStart: Date = .distantPast
     private var seenSources = Set<LogType>()
+    private var lastScanDate: Date?
 
     private init() {}
 
-    // MARK: - PUBLIC
     func update() {
         sessionTask?.cancel()
         trackToken = UUID()
         trackStart = Date()
         latest = nil
-        self.seenSources = []
+        seenSources = []
+        lastScanDate = nil
         sessionTask = Task { await runSession(track: trackToken) }
     }
 
@@ -36,8 +37,6 @@ actor AudioQualityMonitor {
         }
     }
 
-    // MARK: - PRIVATE CORE
-
     private func removeCont(id: UUID) {
         continuations[id] = nil
     }
@@ -52,7 +51,7 @@ actor AudioQualityMonitor {
         let store = try? OSLogStore.local()
         guard let store else { return }
 
-        let timeout: TimeInterval = 3
+        let timeout: TimeInterval = 4
         let start = Date()
 
         while Date().timeIntervalSince(start) < timeout {
@@ -67,7 +66,7 @@ actor AudioQualityMonitor {
                 }
 
                 if seenSources.contains(.coremedia) &&
-                   seenSources.contains(.music) {
+                    seenSources.contains(.music) {
                     return
                 }
             }
@@ -79,34 +78,36 @@ actor AudioQualityMonitor {
     private func scanOnce(store: OSLogStore) async -> CMPlayerStats? {
         return autoreleasepool {
             do {
-                let pos = try store.position(timeIntervalSinceEnd: -1.5)
+                let fromDate = lastScanDate ?? trackStart.addingTimeInterval(-3)
+                let pos = store.position(date: fromDate)
                 let entries = try store.getEntries(with: [], at: pos)
 
                 var merged: CMPlayerStats?
+                var maxDate: Date?
 
                 for case let log as OSLogEntryLog in entries {
                     guard let stats = parse(log) else { continue }
 
-                    if stats.date < trackStart.addingTimeInterval(-1.5) {
+                    if stats.date < trackStart.addingTimeInterval(-3) {
                         continue
                     }
 
                     let source = stats.logFrom
-                    
-#if DEBUG
-                    print("source:", source, "stats:", stats)
-#endif
 
                     if self.seenSources.contains(source) {
-#if DEBUG
-                        print("skip duplicate source:", source)
-#endif
                         continue
                     }
 
                     merged = merge(current: merged, candidate: stats)
                     self.seenSources.insert(source)
 
+                    if maxDate == nil || stats.date > maxDate! {
+                        maxDate = stats.date
+                    }
+                }
+
+                if let maxDate {
+                    self.lastScanDate = maxDate
                 }
 
                 return merged
@@ -117,14 +118,11 @@ actor AudioQualityMonitor {
         }
     }
 
-    // MARK: - PARSE LOG
-
     private func parse(_ log: OSLogEntryLog) -> CMPlayerStats? {
         let msg = log.composedMessage
         let subsystem = log.subsystem
         let date = log.date
 
-        // ------ CORE AUDIO (ALAC / Lossless) ------
         if subsystem == "com.apple.coreaudio",
            msg.contains("ACAppleLosslessDecoder"),
            msg.contains("Input format:") {
@@ -147,14 +145,12 @@ actor AudioQualityMonitor {
             }
         }
 
-        // ------ MUSIC APP Logs ------
         if subsystem == "com.apple.Music" {
             var sr: Double?
             var bd: Int?
             var bitrate: Int?
             var atmos = false
 
-            // inaccurate sr
             if let srStr = msg.firstSubstring(between: "asbdSampleRate = ", and: " kHz"),
                let val = Double(srStr) {
                 sr = val * 1000
@@ -162,21 +158,14 @@ actor AudioQualityMonitor {
 
             if let bdStr = msg.firstSubstring(between: "sdBitDepth = ", and: " bit"),
                let val = Int(bdStr) {
-                #if DEBUG
-                print(msg)
-                #endif
-                
                 bd = val
-            }
-            else if let brStr = msg.firstSubstring(between: "sdBitRate = ", and: " kbps"),
-                    let val = Int(brStr) {
-                // aac or atmos
+            } else if let brStr = msg.firstSubstring(between: "sdBitRate = ", and: " kbps"),
+                      let val = Int(brStr) {
                 bitrate = val
             }
-            
-            //print("music")
-            
-            if let format = msg.firstSubstring(between: "asbdFormatID = ", and: ", sdFormatID"), format == "qc+3" {
+
+            if let format = msg.firstSubstring(between: "asbdFormatID = ", and: ", sdFormatID"),
+               format == "qc+3" {
                 atmos = true
             }
 
@@ -201,33 +190,20 @@ actor AudioQualityMonitor {
             }
         }
 
-        // ------ CORE MEDIA fallback ------
-            if subsystem == "com.apple.coremedia",
+        if subsystem == "com.apple.coremedia",
            msg.contains("Creating AudioQueue"),
            let srStr = msg.firstSubstring(between: "sampleRate:", and: .end),
            let sr = Double(srStr) {
             let fmt = msg.firstSubstring(between: "format:'", and: "'")
-
-            /*if msg.contains("dolby") ||
-                msg.contains("atmos") ||
-                msg.contains("spatial") ||
-                msg.contains("channel") ||
-                msg.contains("format") {
-                print("dolby atmos:", msg)
-            }*/
-            
             let bd = sr == 44100 ? 16 : 24
-            
+
             switch fmt {
             case "qc+3":
                 return CMPlayerStats(sampleRate: sr, bitDepth: bd, bitRate: 768, codec: .atmos, date: date, logFrom: .coremedia)
-                
             case "qlac":
                 return CMPlayerStats(sampleRate: sr, bitDepth: bd, bitRate: -1, codec: .lossless, date: date, logFrom: .coremedia)
-                
             case "qaac":
                 return CMPlayerStats(sampleRate: sr, bitDepth: bd, bitRate: 256, codec: .aac, date: date, logFrom: .coremedia)
-                
             default:
                 return CMPlayerStats(
                     sampleRate: sr,
@@ -243,19 +219,15 @@ actor AudioQualityMonitor {
         return nil
     }
 
-    // MARK: - Merge logic
-
     private func merge(current: CMPlayerStats?, candidate: CMPlayerStats) -> CMPlayerStats {
         guard var best = current else { return normalize(candidate) }
         let cand = normalize(candidate)
 
-        // Per-track atmos gating: only allow Atmos flags within 1s of track change
         let withinAtmosWindow = cand.codec == .atmos && cand.date.timeIntervalSince(trackStart) < 1.0
         let effectiveCodec: AudioCodec = withinAtmosWindow ? cand.codec : (cand.codec == .atmos ? best.codec : cand.codec)
 
         switch cand.logFrom {
         case .coreaudio:
-            // CoreAudio is authoritative
             best = CMPlayerStats(
                 sampleRate: cand.sampleRate,
                 bitDepth: cand.bitDepth,
@@ -265,7 +237,6 @@ actor AudioQualityMonitor {
                 logFrom: cand.logFrom
             )
         case .coremedia:
-            // CoreMedia provides sr/codec/bitrate; keep bitDepth from music if available
             let resolvedBitDepth = best.logFrom == .music && best.bitDepth != -1 ? best.bitDepth : cand.bitDepth
             best = CMPlayerStats(
                 sampleRate: cand.sampleRate,
@@ -276,7 +247,6 @@ actor AudioQualityMonitor {
                 logFrom: cand.logFrom
             )
         case .music:
-            // Music only overrides bitDepth; do not override sr if missing/invalid
             let sr = cand.sampleRate > 0 ? cand.sampleRate : best.sampleRate
             let bitDepth = cand.bitDepth != -1 ? cand.bitDepth : best.bitDepth
             let bitRate = cand.bitRate != -1 ? cand.bitRate : best.bitRate
@@ -295,7 +265,6 @@ actor AudioQualityMonitor {
     }
 
     private func normalize(_ stats: CMPlayerStats) -> CMPlayerStats {
-        // Music-only logs missing sr: fallback for codec/bitDepth/sr
         var sr = stats.sampleRate
         var bd = stats.bitDepth
         var codec = stats.codec
@@ -307,12 +276,11 @@ actor AudioQualityMonitor {
             if bitRate != -1 { codec = .aac }
             if codec == .atmos { bitRate = max(bitRate, 768) }
             if codec == .lossless && sr == -1 && bitRate == -1 {
-                codec = .lossless // unknown SR lossless
+                codec = .lossless
             }
         }
 
         if stats.logFrom == .coremedia {
-            // If qlac at 44.1, allow 24bit later from music
             if bd == 0 { bd = -1 }
         }
 

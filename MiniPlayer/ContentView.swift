@@ -110,7 +110,7 @@ struct ContentView: View {
 
                         if music.codec != .atmos {
                             Text(music.qualityLabel)
-                                .font(.system(size: 11, weight: .light))
+                                .font(.system(size: 12, weight: .light))
                                 .foregroundColor(.secondary)
                                 .lineLimit(1)
                                 .truncationMode(.tail)

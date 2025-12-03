@@ -64,29 +64,79 @@ actor MusicController {
 
     // MARK: - Core refresh
 
+    private var isWatchingEnd = false
+    
+    private func watchTrackEnding(initial: PlayerSnapshot) async {
+        defer { isWatchingEnd = false }
+
+        let initialKey = "\(initial.trackName)|\(initial.artistName)|\(initial.albumName)"
+        var didTrigger = false
+
+        while true {
+            try? await Task.sleep(for: .milliseconds(100))
+
+            guard let snap = latestSnapshot else { return }
+
+            let currentKey = "\(snap.trackName)|\(snap.artistName)|\(snap.albumName)"
+
+            if currentKey != initialKey {
+                return
+            }
+
+            if !snap.isPlaying {
+                return
+            }
+
+            if !didTrigger,
+               snap.duration > 3,
+               snap.position >= snap.duration - 0.8 {
+
+                didTrigger = true
+
+                print("next track")
+                await nextTrack()
+
+                return
+            }
+        }
+    }
+
     func refreshNow() async {
         guard let snapshot = await loadSnapshot() else {
             latestSnapshot = nil
             return
         }
-
+        
         latestSnapshot = snapshot
-
+        
         let oldKey = "\(stableTitle)|\(stableArtist)|\(stableAlbum)"
-
-        // stabilize
+        
         let (newTitle, newArtist, newAlbum) = stabilizeFields(
             title: snapshot.trackName,
             artist: snapshot.artistName,
             album: snapshot.albumName
         )
-
+        
         let newKey = "\(newTitle)|\(newArtist)|\(newAlbum)"
 
-        // detect track change
+        // Track change by metadata
         if detectTrackChange(oldKey: oldKey, newKey: newKey) {
             Task { @MainActor in
                 AudioQualityDetector.trackChanged()
+            }
+        }
+        
+        if snapshot.isPlaying,
+           snapshot.duration > 3,
+           snapshot.repeatMode != 2,
+           snapshot.position > snapshot.duration - 1.0,
+           !isWatchingEnd {
+            isWatchingEnd = true
+            
+            Task {
+                await watchTrackEnding(
+                    initial: snapshot
+                )
             }
         }
 
