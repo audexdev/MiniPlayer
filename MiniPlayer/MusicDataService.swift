@@ -70,14 +70,16 @@ final class MusicDataService: ObservableObject {
                 let label: String
                 if q.codec == .atmos || q.bitRate == 768 {
                     label = "Dolby Atmos"
+                    self.codec = .atmos
                 } else if q.codec == .lossless {
                     label = "\(bd)-bit / \(srText)"
+                    self.codec = q.codec
                 } else if q.bitRate != -1 {
                     label = "AAC \(q.bitRate) kbps"
+                    self.codec = q.codec
                 } else {
-                    label = "AAC"
+                    label = "Unknown"
                 }
-                self.codec = q.codec
                 await MainActor.run {
                     self.qualityLabel = label
                     print("AudioQuality update:", label)
@@ -161,30 +163,35 @@ final class MusicDataService: ObservableObject {
         let oldFrame = window.frame
 
         let newSize = compact
-            ? NSSize(width: 332, height: 160)
-            : NSSize(width: 332, height: 510)
+            ? NSSize(width: 332, height: 162)
+            : NSSize(width: 332, height: 503)
 
         let screenFrame = screen.visibleFrame
-
         let screenCenterX = screenFrame.midX
-        let screenCenterY = screenFrame.midY
 
         let isLeft = oldFrame.minX < screenCenterX
-        let isBottom = oldFrame.minY < screenCenterY
 
-        let dx = newSize.width  - oldFrame.size.width
-        let dy = newSize.height - oldFrame.size.height
+        // Determine top/bottom anchor (which edge is closer)
+        let distanceToTop = screenFrame.maxY - oldFrame.maxY
+        let distanceToBottom = oldFrame.minY - screenFrame.minY
+        let anchorTop = distanceToTop <= distanceToBottom
+
+        let deltaH = newSize.height - oldFrame.height
+        let deltaW = newSize.width  - oldFrame.width
 
         var origin = oldFrame.origin
 
-        // horizontal anchor
-        if !isLeft {  // right side
-            origin.x -= dx
+        if anchorTop {
+            origin.y -= deltaH
+        } else {
+            // bottom-anchored window should not move vertically
+            // because the bottom stays in the same place
         }
 
-        // vertical anchor
-        if !isBottom { // top side
-            origin.y -= dy
+        if isLeft {
+            // left side stays fixed → no movement
+        } else {
+            origin.x -= deltaW
         }
 
         let newFrame = NSRect(origin: origin, size: newSize)

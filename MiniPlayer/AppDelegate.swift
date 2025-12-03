@@ -37,7 +37,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         hosting.layer?.masksToBounds = true
 
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 300, height: 550),
+            contentRect: NSRect(x: 0, y: 0, width: 300, height: 480),
             styleMask: [.titled, .fullSizeContentView, .miniaturizable],
             backing: .buffered,
             defer: false

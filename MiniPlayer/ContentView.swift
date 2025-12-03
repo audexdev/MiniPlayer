@@ -14,6 +14,7 @@ struct ContentView: View {
                 CompactMiniPlayerView()
             } else {
                 fullMiniPlayerView
+                    .ignoresSafeArea()
             }
         }
         .onAppear {
@@ -37,7 +38,6 @@ struct ContentView: View {
                         .resizable()
                         .frame(width: 300, height: 300)
                         .cornerRadius(12)
-                        .shadow(radius: 5)
                         .onTapGesture { toggleCompact() }
                         .transition(.opacity)
                 } else {
@@ -51,19 +51,20 @@ struct ContentView: View {
                     .onTapGesture { toggleCompact() }
                 }
             }
+            .padding(.top, 28)
 
             MarqueeText(
                 text: music.trackName,
                 font: NSFont.systemFont(ofSize: 14, weight: .medium),
-                leftFade: 16, rightFade: 16, startDelay: 1, alignment: .center
+                leftFade: 16, rightFade: 16, startDelay: 3, alignment: .center
             )
 
             MarqueeText(
                 text: "\(music.artistName) – \(music.albumName)",
                 font: NSFont.systemFont(ofSize: 12, weight: .thin),
-                leftFade: 16, rightFade: 16, startDelay: 1, alignment: .center
+                leftFade: 16, rightFade: 16, startDelay: 3, alignment: .center
             )
-
+         
             // Progress bar
             VStack {
                 Slider(
@@ -84,8 +85,9 @@ struct ContentView: View {
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .font(.system(size: 12, weight: .medium))
 
-                    HStack(spacing: 6) {
+                    HStack() {
                         if music.codec == .atmos {
                             Image("Dolby_Atmos")
                                 .resizable()
@@ -93,22 +95,22 @@ struct ContentView: View {
                                 .antialiased(false)
                                 .renderingMode(.template)
                                 .foregroundColor(.secondary)
-                                .frame(width: 100, height: 15.625)
+                                .frame(width: 102.4, height: 14.4)
                                 .fixedSize()
                         } else if music.codec == .lossless {
                             Image("Lossless")
                                 .resizable()
-                                .interpolation(.none)
+                                .interpolation(.high)
                                 .antialiased(false)
                                 .renderingMode(.template)
                                 .foregroundColor(.secondary)
-                                .frame(width: 10, height: 10)
+                                .frame(width: 17, height: 10.2)
                                 .fixedSize()
                         }
 
                         if music.codec != .atmos {
                             Text(music.qualityLabel)
-                                .font(.system(size: 13, weight: .light))
+                                .font(.system(size: 11, weight: .light))
                                 .foregroundColor(.secondary)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
@@ -116,23 +118,26 @@ struct ContentView: View {
                         }
                     }
                     .layoutPriority(10)
-                    .frame(width: 170)
+                    .frame(width: 150)
 
                     Text(ui.formattedDuration)
                         .font(.caption2)
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity, alignment: .trailing)
+                        .font(.system(size: 12, weight: .medium))
                 }
             }
 
             // Controls
             playerControls
-                .padding(.bottom, 8)
-
+            
             // Volume
             volumeSlider
+                .padding(.top, 4)
         }
-        .padding()
+        .ignoresSafeArea()
+        .padding(.horizontal)
+        .padding(.bottom, -16)
     }
 
     private var playerControls: some View {
@@ -164,10 +169,9 @@ struct ContentView: View {
             if ui.isDraggingVolume {
                 Text("\(Int(volumeValue))")
                     .font(.caption2)
-                    .padding(6)
                     .background(.ultraThinMaterial)
                     .cornerRadius(6)
-                    .offset(y: -22)
+                    .offset(y: -24)
                     .transition(.opacity)
             }
 

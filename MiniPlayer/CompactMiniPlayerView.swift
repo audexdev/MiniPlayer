@@ -52,17 +52,17 @@ struct CompactMiniPlayerView: View {
             MarqueeText(
                 text: music.trackName,
                 font: NSFont.systemFont(ofSize: 14, weight: .medium),
-                leftFade: 16, rightFade: 16, startDelay: 2, alignment: .leading
+                leftFade: 16, rightFade: 16, startDelay: 3, alignment: .leading
             )
             MarqueeText(
                 text: music.artistName,
                 font: NSFont.systemFont(ofSize: 12, weight: .thin),
-                leftFade: 16, rightFade: 16, startDelay: 2, alignment: .leading
+                leftFade: 16, rightFade: 16, startDelay: 3, alignment: .leading
             )
             MarqueeText(
                 text: music.albumName,
                 font: NSFont.systemFont(ofSize: 12, weight: .thin),
-                leftFade: 16, rightFade: 16, startDelay: 2, alignment: .leading
+                leftFade: 16, rightFade: 16, startDelay: 3, alignment: .leading
             )
         }
     }
@@ -118,7 +118,43 @@ struct CompactMiniPlayerView: View {
             HStack {
                 Text(ui.formattedCurrent)
                     .font(.caption2).foregroundColor(.secondary)
+                
                 Spacer()
+                
+                HStack() {
+                    if music.codec == .atmos {
+                        Image("Dolby_Atmos")
+                            .resizable()
+                            .interpolation(.high)
+                            .antialiased(false)
+                            .renderingMode(.template)
+                            .foregroundColor(.secondary)
+                            .frame(width: 89.6, height: 12.6)
+                            .fixedSize()
+                    } else if music.codec == .lossless {
+                        Image("Lossless")
+                            .resizable()
+                            .interpolation(.none)
+                            .antialiased(false)
+                            .renderingMode(.template)
+                            .foregroundColor(.secondary)
+                            .frame(width: 15, height: 9)
+                            .fixedSize()
+                    }
+
+                    if music.codec != .atmos {
+                        Text(music.qualityLabel)
+                            .font(.system(size: 10, weight: .light))
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .layoutPriority(10)
+                
+                Spacer()
+                
                 Text(ui.formattedDuration)
                     .font(.caption2).foregroundColor(.secondary)
             }

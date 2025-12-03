@@ -10,7 +10,7 @@ actor AudioQualityMonitor {
     private var continuations: [UUID: AsyncStream<CMPlayerStats>.Continuation] = [:]
     private var trackToken: UUID = UUID()
     private var trackStart: Date = .distantPast
-    private var lastPosition: OSLogPosition?
+    private var seenSources = Set<LogType>()
 
     private init() {}
 
@@ -19,8 +19,8 @@ actor AudioQualityMonitor {
         sessionTask?.cancel()
         trackToken = UUID()
         trackStart = Date()
-        lastPosition = nil
         latest = nil
+        self.seenSources = []
         sessionTask = Task { await runSession(track: trackToken) }
     }
 
@@ -49,28 +49,31 @@ actor AudioQualityMonitor {
     }
 
     private func runSession(track: UUID) async {
+        let store = try? OSLogStore.local()
+        guard let store else { return }
+
+        let timeout: TimeInterval = 3
         let start = Date()
-        let duration: TimeInterval = 1.0
 
-        let store: OSLogStore
-        do {
-            store = try OSLogStore.local()
-        } catch {
-            print("[AUDIO] scan error:", error)
-            return
-        }
-
-        while Date().timeIntervalSince(start) < duration {
+        while Date().timeIntervalSince(start) < timeout {
             if Task.isCancelled || track != trackToken { return }
 
             if let stats = await scanOnce(store: store) {
                 latest = stats
                 broadcast(stats)
+
+                if stats.logFrom == .coreaudio {
+                    return
+                }
+
+                if seenSources.contains(.coremedia) &&
+                   seenSources.contains(.music) {
+                    return
+                }
             }
 
-            try? await Task.sleep(nanoseconds: 50_000_000)
+            try? await Task.sleep(for: .milliseconds(100))
         }
-        // store goes out of scope here, releasing its mappings
     }
 
     private func scanOnce(store: OSLogStore) async -> CMPlayerStats? {
@@ -82,9 +85,28 @@ actor AudioQualityMonitor {
                 var merged: CMPlayerStats?
 
                 for case let log as OSLogEntryLog in entries {
-                    if let stats = parse(log) {
-                        merged = merge(current: merged, candidate: stats)
+                    guard let stats = parse(log) else { continue }
+
+                    if stats.date < trackStart.addingTimeInterval(-1.5) {
+                        continue
                     }
+
+                    let source = stats.logFrom
+                    
+#if DEBUG
+                    print("source:", source, "stats:", stats)
+#endif
+
+                    if self.seenSources.contains(source) {
+#if DEBUG
+                        print("skip duplicate source:", source)
+#endif
+                        continue
+                    }
+
+                    merged = merge(current: merged, candidate: stats)
+                    self.seenSources.insert(source)
+
                 }
 
                 return merged
@@ -140,6 +162,10 @@ actor AudioQualityMonitor {
 
             if let bdStr = msg.firstSubstring(between: "sdBitDepth = ", and: " bit"),
                let val = Int(bdStr) {
+                #if DEBUG
+                print(msg)
+                #endif
+                
                 bd = val
             }
             else if let brStr = msg.firstSubstring(between: "sdBitRate = ", and: " kbps"),
@@ -148,14 +174,13 @@ actor AudioQualityMonitor {
                 bitrate = val
             }
             
-            print("music")
+            //print("music")
             
             if let format = msg.firstSubstring(between: "asbdFormatID = ", and: ", sdFormatID"), format == "qc+3" {
                 atmos = true
             }
 
             if msg.contains("Dolby Atmos") ||
-                msg.contains("is rendering spatial audio") ||
                 msg.contains("is Atmos") ||
                 msg.contains("is binaural") ||
                 msg.contains("original is Atmos") ||
@@ -182,8 +207,7 @@ actor AudioQualityMonitor {
            let srStr = msg.firstSubstring(between: "sampleRate:", and: .end),
            let sr = Double(srStr) {
             let fmt = msg.firstSubstring(between: "format:'", and: "'")
-            
-            print("coremedia:", msg)
+
             /*if msg.contains("dolby") ||
                 msg.contains("atmos") ||
                 msg.contains("spatial") ||
@@ -226,7 +250,7 @@ actor AudioQualityMonitor {
         let cand = normalize(candidate)
 
         // Per-track atmos gating: only allow Atmos flags within 1s of track change
-        let withinAtmosWindow = cand.codec == .atmos && Date().timeIntervalSince(trackStart) < 1.0
+        let withinAtmosWindow = cand.codec == .atmos && cand.date.timeIntervalSince(trackStart) < 1.0
         let effectiveCodec: AudioCodec = withinAtmosWindow ? cand.codec : (cand.codec == .atmos ? best.codec : cand.codec)
 
         switch cand.logFrom {
