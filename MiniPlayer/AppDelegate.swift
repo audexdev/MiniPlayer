@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import Foundation
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
@@ -11,7 +12,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func makeWindowFloat() {
         guard let window = WindowManager.window else { return }
 
-        window.level = NSWindow.Level(rawValue: 5000)
+        window.level = .floating
+        window.ignoresMouseEvents = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
     }
     
@@ -61,6 +63,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         createMainWindow()
         setupSpaceKeyControl()
         makeWindowFloat()
+        
+        ProcessInfo.processInfo.beginActivity(options: [.userInitiatedAllowingIdleSystemSleep, .userInteractive], reason: "miniplayer real-time audio quality reading")
     }
     
     func applicationShouldHandleReopen(
