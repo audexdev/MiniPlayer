@@ -65,6 +65,7 @@ actor MusicController {
     // MARK: - Core refresh
 
     private var isWatchingEnd = false
+    private var didForceNext = false
     
     private func watchTrackEnding(initial: PlayerSnapshot) async {
         defer { isWatchingEnd = false }
@@ -73,9 +74,10 @@ actor MusicController {
         var didTrigger = false
 
         while true {
-            try? await Task.sleep(for: .milliseconds(100))
+            try? await Task.sleep(for: .milliseconds(50))
 
-            guard let snap = latestSnapshot else { return }
+            let snap = await loadSnapshot() ?? latestSnapshot
+            guard let snap else { return }
 
             let currentKey = "\(snap.trackName)|\(snap.artistName)|\(snap.albumName)"
 
@@ -86,14 +88,18 @@ actor MusicController {
             if !snap.isPlaying {
                 return
             }
+            
+            print("position:", snap.position)
 
             if !didTrigger,
+               !didForceNext,
                snap.duration > 3,
-               snap.position >= snap.duration - 0.8 {
+               snap.position >= snap.duration - 0.4 {
 
                 didTrigger = true
+                didForceNext = true
 
-                print("next track")
+                print("next track (forced)")
                 await nextTrack()
 
                 return
@@ -121,6 +127,7 @@ actor MusicController {
 
         // Track change by metadata
         if detectTrackChange(oldKey: oldKey, newKey: newKey) {
+            didForceNext = false
             Task { @MainActor in
                 AudioQualityDetector.trackChanged()
             }
