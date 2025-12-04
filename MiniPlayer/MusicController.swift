@@ -94,7 +94,7 @@ actor MusicController {
             if !didTrigger,
                !didForceNext,
                snap.duration > 3,
-               snap.position >= snap.duration - 0.4 {
+               snap.position >= snap.duration - 0.2 {
 
                 didTrigger = true
                 didForceNext = true
