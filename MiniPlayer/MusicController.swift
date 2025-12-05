@@ -74,7 +74,7 @@ actor MusicController {
         var didTrigger = false
 
         while true {
-            try? await Task.sleep(for: .milliseconds(50))
+            try? await Task.sleep(for: .milliseconds(10))
 
             let snap = await loadSnapshot() ?? latestSnapshot
             guard let snap else { return }
@@ -89,12 +89,13 @@ actor MusicController {
                 return
             }
             
+            print("duration:", snap.duration)
             print("position:", snap.position)
 
             if !didTrigger,
                !didForceNext,
                snap.duration > 3,
-               snap.position >= snap.duration - 0.2 {
+               snap.position >= snap.duration - 0.15 {
 
                 didTrigger = true
                 didForceNext = true
@@ -136,7 +137,7 @@ actor MusicController {
         if snapshot.isPlaying,
            snapshot.duration > 3,
            snapshot.repeatMode != 2,
-           snapshot.position > snapshot.duration - 1.0,
+           snapshot.position > snapshot.duration - 1,
            !isWatchingEnd {
             isWatchingEnd = true
             
