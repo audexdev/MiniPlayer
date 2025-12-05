@@ -12,10 +12,28 @@ A lightweight, minimal floating Mini Player for **macOS Music.app**, built with 
 - ▶️ Playback controls: play/pause, next, previous
 - 🔀 Shuffle & 🔁 Repeat (All / One / Off)
 - 🕒 Progress bar with seek support
-- 🖼 Fetches album art via iTunes Search API
+- 🖼 Smart album art fetching  
+  - Primary: AppleScript via Music.app  
+  - Fallback: iTunes Search API
+- 🔈 **Track Quality Detection**  
+  - Bit Depth (16 / 24-bit)  
+  - Sample Rate (44.1–192 kHz)  
+  - Lossless / Hi-Res Lossless  
+  - Dolby Atmos
 - 📌 **Always-on-top floating window**
 - 🎹 Spacebar to toggle Play/Pause when window is focused
 - 🧊 Clean minimal UI
+- 🖥 macOS native window with rounded corners & vibrancy
+
+---
+
+## 📸 Preview
+
+### Full Mode
+<img src="Preview/full.png" width="360">
+
+### Compact Mode
+<img src="Preview/compact.png" width="360">
 
 ---
 
@@ -23,9 +41,16 @@ A lightweight, minimal floating Mini Player for **macOS Music.app**, built with 
 
 This app controls **Music.app via ScriptingBridge**, which **does not work in macOS Sandbox mode**.
 
-> ✅ Run build with **App Sandbox OFF**  
 > ❌ Will not work as a sandboxed App Store app  
 > ✅ Perfect for local use or GitHub distribution
+
+---
+
+## 📦 Installation
+
+1. Download the latest release from **Releases**
+2. Move `MiniPlayer.app` to Applications
+3. Launch and grant Music.app automation permission
 
 ---
 
@@ -44,3 +69,8 @@ This project uses the following Swift packages:
 
 - [Sweep](https://github.com/JohnSundell/Sweep) — Simple string scanning utilities
 - [SimplyCoreAudio](https://github.com/rnine/SimplyCoreAudio) - A framework that makes CoreAudio easier to use.
+
+---
+
+Built by audex.dev
+https://www.audex.dev
